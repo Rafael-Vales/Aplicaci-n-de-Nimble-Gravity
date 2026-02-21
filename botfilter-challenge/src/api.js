@@ -1,14 +1,24 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_FALLBACK_BASE_URL =
+  "https://botfilter-h5ddh6dye8exb7ha.centralus-01.azurewebsites.net";
+
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || API_FALLBACK_BASE_URL).replace(
+  /\/$/,
+  ""
+);
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
-
+  let res;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+      ...options,
+    });
+  } catch {
+    throw new Error("No se pudo conectar con la API. Revisá tu conexión e intentá de nuevo.");
+  }
 
   const text = await res.text();
   let data;
